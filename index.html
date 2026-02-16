@@ -11,8 +11,12 @@
 <body>
 <!-- header -->
 <header>
-    <div class="title"><a href="index.html"><h1>DFDV</h1></a></div>
-    <ul>
+    <div>
+    
+        <div  class="title" style="display: flex;  justify-content: space-between; align-items: center;">
+            <a href="index.html"><h1>Logo</h1></a>
+        </div>
+         <ul>
         <li>
             <button><a href="register.html"><h3>Register</h3></a></button>
         </li>
@@ -20,6 +24,16 @@
             <button><a href="login.html"><h3>Login</h3></a></button> 
         </li>
     </ul>
+    </div>
+
+    <!-- <ul>
+        <li>
+            <button><a href="register.html"><h3>Register</h3></a></button>
+        </li>
+        <li>
+            <button><a href="login.html"><h3>Login</h3></a></button> 
+        </li>
+    </ul> -->
     <!-- <nav>
         <ul>
             <li>
@@ -78,29 +92,23 @@
 </div>
 
 <script>
-    const baseURL = "https://apomictically-pseudoapologetic-merri.ngrok-free.dev";
-    // https://huggingface-xfce-1.tail320964.ts.net:8443
-    let token = "";
+    const baseURL = "http://localhost:4000";
+
 
     const output = document.getElementById("output");
 
-    function showResponse(data) {
-      output.textContent = JSON.stringify(data, null, 2);
-    }
-    // AI Predict
+
     document.getElementById("predictForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!token) return alert("Please log in first!");
+
       const formData = new FormData();
       formData.append("video", document.getElementById("videoFile").files[0]);
-
       const res = await fetch(`${baseURL}/ai/predict`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
         body: formData
-      });
-      const data = await res.json();
-      showResponse(data);
+      })
+     const data = await res.json()
+    console.log(data)
     });
 </script>
 </body>
