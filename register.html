@@ -50,15 +50,13 @@
 
 
   <script>
-    const baseURL = "https://apomictically-pseudoapologetic-merri.ngrok-free.dev";
+    const baseURL = "http://localhost:4000";
     // https://huggingface-xfce-1.tail320964.ts.net:8443
     let token = "";
 
     const output = document.getElementById("output");
 
-    function showResponse(data) {
-      output.textContent = JSON.stringify(data, null, 2);
-    }
+
 
     // Register
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
@@ -68,15 +66,14 @@
         email: document.getElementById("regEmail").value,
         password: document.getElementById("regPassword").value
       };
-      console.log(JSON.stringify(body));
-      
+   
       const res = await fetch(`${baseURL}/user/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
       });
       const data = await res.json();
-      showResponse(data);
+     console.log(data)
     });  
 </script>    
 </body>

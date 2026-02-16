@@ -43,15 +43,12 @@
 
 
 <script>
-    const baseURL = "https://apomictically-pseudoapologetic-merri.ngrok-free.dev";
+    const baseURL = "http://localhost:4000";
     // https://huggingface-xfce-1.tail320964.ts.net:8443
-    let token = "";
+
 
     const output = document.getElementById("output");
 
-    function showResponse(data) {
-      output.textContent = JSON.stringify(data, null, 2);
-    }
     // Login
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -65,13 +62,11 @@
         body: JSON.stringify(body)
       });
       const data = await res.json();
-      showResponse(data);
-
+     console.log(data)
       if (data.token) {
         token = data.token;
-        alert("Login successful! Token saved.");
-      } else {
-        alert("Login failed!");
+        window.localStorage.setItem("token",token)
+
       }
     });
 </script>
