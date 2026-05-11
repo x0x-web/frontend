@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DFDV History — View your past deepfake video detection analyses.">
+    <title>History — DFDV</title>
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+    /* ── History Page Styles ── */
+    .history-section {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 0 var(--space-lg) var(--space-3xl);
+        animation: fadeInUp 0.9s ease both;
+    }
+
+    .history-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xl);
+        padding: var(--space-2xl);
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        box-shadow: var(--shadow-card);
+    }
+
+    .history-card h2 {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: var(--space-lg);
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+    }
+
+    .history-card h2 .icon {
+        color: var(--primary-400);
+    }
+
+    /* History Table */
+    .history-table-wrapper {
+        overflow-x: auto;
+        border-radius: var(--radius-md);
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .history-table thead {
+        position: sticky;
+        top: 0;
+    }
+
+    .history-table th {
+        padding: var(--space-md) var(--space-md);
+        text-align: left;
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--glass-border);
+        background: rgba(255, 255, 255, 0.02);
+        white-space: nowrap;
+    }
+
+    .history-table td {
+        padding: var(--space-md) var(--space-md);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        color: var(--text-secondary);
+        vertical-align: middle;
+    }
+
+    .history-table tbody tr {
+        transition: background var(--transition-fast);
+    }
+
+    .history-table tbody tr:hover {
+        background: rgba(124, 58, 237, 0.04);
+    }
+
+    .history-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* File name cell */
+    .file-cell {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        max-width: 220px;
+    }
+
+    .file-cell .file-icon-mini {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm);
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: white;
+    }
+
+    .file-cell .file-name-text {
+        font-weight: 500;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Result badge */
+    .result-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        border-radius: var(--radius-pill);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .result-badge-real {
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        color: var(--success);
+    }
+
+    .result-badge-fake {
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.25);
+        color: var(--danger);
+    }
+
+    .result-badge .badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+
+    .result-badge-real .badge-dot { background: var(--success); }
+    .result-badge-fake .badge-dot { background: var(--danger); }
+
+    /* Confidence cell */
+    .conf-cell {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+    }
+
+    .conf-mini-bar {
+        width: 60px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: var(--radius-pill);
+        overflow: hidden;
+    }
+
+    .conf-mini-fill {
+        height: 100%;
+        border-radius: var(--radius-pill);
+        transition: width 0.6s ease;
+    }
+
+    .conf-mini-fill.fill-real {
+        background: linear-gradient(90deg, var(--success), #34d399);
+    }
+
+    .conf-mini-fill.fill-fake {
+        background: linear-gradient(90deg, var(--danger), #f87171);
+    }
+
+    .conf-text {
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--text-primary);
+        min-width: 45px;
+    }
+
+    /* Date cell */
+    .date-cell {
+        font-size: 13px;
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    /* Empty state */
+    .history-empty {
+        text-align: center;
+        padding: var(--space-3xl) var(--space-lg);
+    }
+
+    .history-empty .empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto var(--space-lg);
+        color: var(--text-muted);
+        opacity: 0.4;
+    }
+
+    .history-empty h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: var(--space-sm);
+        color: var(--text-secondary);
+    }
+
+    .history-empty p {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-bottom: var(--space-xl);
+    }
+
+    /* Loading skeleton */
+    .skeleton-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-lg);
+        padding: var(--space-md);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .skeleton-bar {
+        height: 14px;
+        border-radius: var(--radius-sm);
+        background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+        background-size: 200% 100%;
+        animation: skeletonShimmer 1.5s infinite;
+    }
+
+    @keyframes skeletonShimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* Stats bar */
+    .history-stats {
+        display: flex;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+        flex-wrap: wrap;
+    }
+
+    .stat-chip {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        padding: 8px 16px;
+        border-radius: var(--radius-pill);
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--glass-border);
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .stat-chip strong {
+        color: var(--text-primary);
+        font-weight: 700;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+        .history-section {
+            padding: 0 var(--space-md) var(--space-2xl);
+        }
+
+        .history-card {
+            padding: var(--space-lg);
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: var(--space-sm) var(--space-sm);
+        }
+
+        .file-cell {
+            max-width: 140px;
+        }
+
+        .conf-mini-bar {
+            display: none;
+        }
+
+        .history-stats {
+            gap: var(--space-sm);
+        }
+
+        .stat-chip {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .history-table .frames-col {
+            display: none;
+        }
+    }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+    <!-- ===== Header ===== -->
+    <header>
+        <div class="header-inner">
+            <a href="index.html" class="logo" id="logo-link">
+                <div class="logo-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                    </svg>
+                </div>
+                <span class="logo-text">DFDV</span>
+            </a>
+            <!-- Guest nav -->
+            <div class="nav-actions" id="guestNav">
+                <a href="login.html" class="btn btn-primary">Login</a>
+            </div>
+            <!-- User nav -->
+            <div class="nav-user" id="userNav" style="display:none;">
+                <span class="sub-badge" id="planBadge">FREE</span>
+                <a href="index.html" class="btn btn-ghost">Detector</a>
+                <a href="pricing.html" class="btn btn-ghost">Pricing</a>
+                <button class="btn-logout" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== Hero ===== -->
+    <section class="hero" style="padding-bottom: 0;">
+        <div class="hero-badge">
+            <span class="dot"></span>
+            Analysis History
+        </div>
+        <h1>Your <span class="gradient-text">Predictions</span></h1>
+        <p class="subtitle">Review all your past deepfake detection analyses in one place.</p>
+    </section>
+
+    <!-- ===== History Section ===== -->
+    <section class="history-section" id="historySection">
+        <div class="history-card">
+            <h2>
+                <span class="icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                </span>
+                Recent Analyses
+            </h2>
+
+            <!-- Stats -->
+            <div class="history-stats" id="historyStats" style="display:none;">
+                <div class="stat-chip">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    Total: <strong id="statTotal">0</strong>
+                </div>
+                <div class="stat-chip">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Real: <strong id="statReal" style="color: var(--success);">0</strong>
+                </div>
+                <div class="stat-chip">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Fake: <strong id="statFake" style="color: var(--danger);">0</strong>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState">
+                <div class="skeleton-row">
+                    <div class="skeleton-bar" style="width:140px;"></div>
+                    <div class="skeleton-bar" style="width:60px;"></div>
+                    <div class="skeleton-bar" style="width:80px;"></div>
+                    <div class="skeleton-bar" style="width:100px;"></div>
+                </div>
+                <div class="skeleton-row">
+                    <div class="skeleton-bar" style="width:180px;"></div>
+                    <div class="skeleton-bar" style="width:60px;"></div>
+                    <div class="skeleton-bar" style="width:70px;"></div>
+                    <div class="skeleton-bar" style="width:100px;"></div>
+                </div>
+                <div class="skeleton-row">
+                    <div class="skeleton-bar" style="width:120px;"></div>
+                    <div class="skeleton-bar" style="width:60px;"></div>
+                    <div class="skeleton-bar" style="width:90px;"></div>
+                    <div class="skeleton-bar" style="width:100px;"></div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="history-table-wrapper" id="tableWrapper" style="display:none;">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>File</th>
+                            <th>Result</th>
+                            <th>Confidence</th>
+                            <th class="frames-col">Frames</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div class="history-empty" id="emptyState" style="display:none;">
+                <div class="empty-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                </div>
+                <h3>No analyses yet</h3>
+                <p>Upload a video on the detector page to see your prediction history here.</p>
+                <a href="index.html" class="btn btn-primary btn-lg">Go to Detector</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Footer ===== -->
+    <footer class="footer">
+        <p>DFDV © 2026 — AI-Powered DeepFake Detection</p>
+    </footer>
+
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const baseURL = "http://localhost:4000";
+let token = window.localStorage.getItem("token") || "";
+let cachedUser = null;
+try { cachedUser = JSON.parse(window.localStorage.getItem("userData")); } catch {}
+
+// ── Toast ──
+function showToast(msg, type="info") {
+    const c = document.getElementById("toastContainer");
+    const icons = {
+        success:'<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+        error:'<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+        info:'<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+    };
+    const t = document.createElement("div");
+    t.className = `toast toast-${type}`;
+    t.innerHTML = `${icons[type]||icons.info}<span>${msg}</span><button class="toast-close" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+    c.appendChild(t);
+    const cl = () => { t.classList.add("toast-exit"); setTimeout(() => t.remove(), 300); };
+    t.querySelector(".toast-close").addEventListener("click", cl);
+    setTimeout(cl, 4500);
+}
+
+// ── Auth ──
+if (token && cachedUser) {
+    showUser();
+} else if (!token) {
+    showGuest();
+}
+
+async function checkAuth() {
+    if (!token) { showGuest(); return; }
+    try {
+        const res = await fetch(`${baseURL}/user/me`, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) throw new Error();
+        const user = await res.json();
+        cachedUser = user;
+        window.localStorage.setItem("userData", JSON.stringify(user));
+        const plan = user.plan || "free";
+        const b = document.getElementById("planBadge");
+        b.textContent = plan.toUpperCase();
+        b.className = `sub-badge sub-badge-${plan}`;
+    } catch {
+        window.localStorage.removeItem("token");
+        window.localStorage.removeItem("userData");
+        token = "";
+        showGuest();
+    }
+}
+
+function showGuest() {
+    document.getElementById("guestNav").style.display = "flex";
+    document.getElementById("userNav").style.display = "none";
+}
+
+function showUser() {
+    document.getElementById("guestNav").style.display = "none";
+    document.getElementById("userNav").style.display = "flex";
+    const plan = cachedUser?.plan || "free";
+    const b = document.getElementById("planBadge");
+    b.textContent = plan.toUpperCase();
+    b.className = `sub-badge sub-badge-${plan}`;
+}
+
+// ── Logout ──
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    window.localStorage.removeItem("token");
+    window.localStorage.removeItem("userData");
+    token = "";
+    showGuest();
+    showToast("Logged out successfully", "info");
+});
+
+// ── Load History ──
+async function loadHistory() {
+    const loading = document.getElementById("loadingState");
+    const tableWrapper = document.getElementById("tableWrapper");
+    const emptyState = document.getElementById("emptyState");
+    const historyBody = document.getElementById("historyBody");
+    const statsBar = document.getElementById("historyStats");
+
+    if (!token) {
+        loading.style.display = "none";
+        emptyState.style.display = "block";
+        return;
+    }
+
+    try {
+        const res = await fetch(`${baseURL}/history`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+
+        loading.style.display = "none";
+
+        if (!data.length) {
+            emptyState.style.display = "block";
+            return;
+        }
+
+        // Stats
+        const total = data.length;
+        const realCount = data.filter(d => d.result === "REAL").length;
+        const fakeCount = data.filter(d => d.result === "FAKE").length;
+        document.getElementById("statTotal").textContent = total;
+        document.getElementById("statReal").textContent = realCount;
+        document.getElementById("statFake").textContent = fakeCount;
+        statsBar.style.display = "flex";
+
+        // Build rows
+        historyBody.innerHTML = data.map(item => {
+            const isFake = item.result === "FAKE";
+            const conf = item.confidence !== null && item.confidence !== undefined
+                ? (parseFloat(item.confidence) * 100).toFixed(1)
+                : null;
+            const date = new Date(item.createdAt);
+            const dateStr = date.toLocaleDateString("en-US", {
+                month: "short", day: "numeric", year: "numeric"
+            });
+            const timeStr = date.toLocaleTimeString("en-US", {
+                hour: "2-digit", minute: "2-digit"
+            });
+
+            return `<tr>
+                <td>
+                    <div class="file-cell">
+                        <div class="file-icon-mini">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                            </svg>
+                        </div>
+                        <span class="file-name-text" title="${item.fileName}">${item.fileName}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="result-badge ${isFake ? 'result-badge-fake' : 'result-badge-real'}">
+                        <span class="badge-dot"></span>
+                        ${item.result}
+                    </span>
+                </td>
+                <td>
+                    ${conf !== null ? `
+                    <div class="conf-cell">
+                        <div class="conf-mini-bar">
+                            <div class="conf-mini-fill ${isFake ? 'fill-fake' : 'fill-real'}" style="width:${conf}%"></div>
+                        </div>
+                        <span class="conf-text">${conf}%</span>
+                    </div>
+                    ` : '<span style="color:var(--text-muted)">—</span>'}
+                </td>
+                <td class="frames-col">${item.framesProcessed || '—'}</td>
+                <td>
+                    <div class="date-cell">${dateStr}<br><small style="opacity:0.6">${timeStr}</small></div>
+                </td>
+            </tr>`;
+        }).join("");
+
+        tableWrapper.style.display = "block";
+
+    } catch (err) {
+        loading.style.display = "none";
+        showToast("Failed to load history", "error");
+    }
+}
+
+// ── Init ──
+checkAuth();
+loadHistory();
+</script>
+</body>
+</html>
